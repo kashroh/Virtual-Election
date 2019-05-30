@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_.mvn" default="compile.module..mvn">
+  <dirname property="module..mvn.basedir" file="${ant.file.module_.mvn}"/>
+  
+  <property name="module.jdk.home..mvn" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin..mvn" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath..mvn" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args..mvn" value="-encoding UTF-8 -source 8 -target 8 ${compiler.args}"/>
+  
+  <property name=".mvn.output.dir" value="${module..mvn.basedir}/../out/production/.mvn"/>
+  <property name=".mvn.testoutput.dir" value="${module..mvn.basedir}/../out/test/.mvn"/>
+  
+  <path id=".mvn.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id=".mvn.module.production.classpath">
+    <path refid="${module.jdk.classpath..mvn}"/>
+  </path>
+  
+  <path id=".mvn.runtime.production.module.classpath">
+    <pathelement location="${.mvn.output.dir}"/>
+  </path>
+  
+  <path id=".mvn.module.classpath">
+    <path refid="${module.jdk.classpath..mvn}"/>
+    <pathelement location="${.mvn.output.dir}"/>
+  </path>
+  
+  <path id=".mvn.runtime.module.classpath">
+    <pathelement location="${.mvn.testoutput.dir}"/>
+    <pathelement location="${.mvn.output.dir}"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module..mvn">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation..mvn">
+    <patternset refid="excluded.from.module..mvn"/>
+  </patternset>
+  
+  <path id=".mvn.module.sourcepath">
+    <dirset dir="${module..mvn.basedir}">
+      <include name="wrapper"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module..mvn" depends="compile.module..mvn.production,compile.module..mvn.tests" description="Compile module .mvn"/>
+  
+  <target name="compile.module..mvn.production" depends="register.custom.compilers" description="Compile module .mvn; production classes">
+    <mkdir dir="${.mvn.output.dir}"/>
+    <javac2 destdir="${.mvn.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin..mvn}/javac">
+      <compilerarg line="${compiler.args..mvn}"/>
+      <bootclasspath refid=".mvn.module.bootclasspath"/>
+      <classpath refid=".mvn.module.production.classpath"/>
+      <src refid=".mvn.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation..mvn"/>
+    </javac2>
+    
+    <copy todir="${.mvn.output.dir}">
+      <fileset dir="${module..mvn.basedir}/wrapper">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module..mvn.tests" depends="register.custom.compilers,compile.module..mvn.production" description="compile module .mvn; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module..mvn" description="cleanup module">
+    <delete dir="${.mvn.output.dir}"/>
+    <delete dir="${.mvn.testoutput.dir}"/>
+  </target>
+</project>
